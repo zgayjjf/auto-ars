@@ -561,19 +561,25 @@ jQuery(function() {
     // ars 正式发布
     function doAutoArsIdc(fileFilter, callback) {
         // 先加载要发布的文件
-        getFileListRemote(fileFilter, function () {
-            fileAndMapCheck(fileFilter, function() {
-                $MessageInfo.text('正在将发布相关设置信息发往服务器...')
-                idcRelease(fileFilter, function(data) {
-                    // 外发进度
-                    getReleaseLog({
-                        taskid: data.taskid,
-                        isbatrelease: data.isbatrelease
-                    }, function() {
-                        callback && callback()
+        getFileListRemote(fileFilter, function (files) {
+            if (!files) {
+                if (window.confirm('当前发布列表没有' + fileFilter + '文件，是否发布')) {
+                    callback && callback()
+                }
+            } else {
+                fileAndMapCheck(fileFilter, function() {
+                    $MessageInfo.text('正在将发布相关设置信息发往服务器...')
+                    idcRelease(fileFilter, function(data) {
+                        // 外发进度
+                        getReleaseLog({
+                            taskid: data.taskid,
+                            isbatrelease: data.isbatrelease
+                        }, function() {
+                            callback && callback()
+                        })
                     })
                 })
-            })
+            }
         })
     }
 
