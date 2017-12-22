@@ -28,11 +28,11 @@ jQuery(function() {
 
     var ENV_ID = 3
     // 模块ID，在页面上是隐藏input
-    var moduleId = +id('hdModuleId').value
+    var moduleId = +$id('hdModuleId').value
     // 产品ID，在页面上是隐藏input
-    var productId = +id('hdProductId').value
+    var productId = +$id('hdProductId').value
     // 当前处理人                            // todo:提单人和当前处理人有什么区别？
-    var operator = id('ds1_curruser').innerText.trim()
+    var operator = $id('ds1_curruser').innerText.trim()
     // 当前状态
     var status = g_currentstatus_id
     // 提单人
@@ -42,7 +42,7 @@ jQuery(function() {
     // 请求类型 0-文件发布测试请求 1-文件发布请求
     var requestType = window.requestType//|| jQuery('#requestType').val()
     // 关注列表
-    var ccs = id('ccs_TextBoxValue').value.trim().replace(/\(.*?\)/g, "")
+    var ccs = $id('ccs_TextBoxValue').value.trim().replace(/\(.*?\)/g, "")
     // 文件列表，后续会异步拉取
     var fileList = []
 
@@ -63,7 +63,7 @@ jQuery(function() {
         return !m ? "":decodeURIComponent(m[2]);
     }
 
-    function id (id) {
+    function $id (id) {
         return document.getElementById(id)
     }
 
@@ -174,7 +174,7 @@ jQuery(function() {
             // 模块id
             module_id: moduleId,
             // 添加上一步处理人
-            lastOperator: id('ds1_lastuser').innerText,
+            lastOperator: $id('ds1_lastuser').innerText,
             // 发布来源，ars源码中定义了
             codeOrigin: codeOrigin,
             builder: builder,
@@ -315,7 +315,7 @@ jQuery(function() {
             return extractFiles(fileList, fileFilter)
         } else {
             jQuery.ajax('arsphp/index.php/release/getReleaseFilelist', {
-                dataType: 'xml',
+                dataType: 'json',
                 type: 'get',
                 data: {
                     orderid: orderId,
@@ -325,21 +325,14 @@ jQuery(function() {
                     codeOrigin: codeOrigin,
                     requestType: requestType
                 }
-            }).done(function (resXml) {
-                var $files = jQuery(resXml).find('files>file')
-                var files = $files.map(function (index, file) {
-                    var $file = jQuery(file)
-                    return {
-                        id: $file.find('id').text(),
-                        path: $file.find('name').text()
-                    }
-                })
+            }).done(function (res) {
+                var files = res.file
 
                 // 挂载全局
                 fileList = files
 
                 callback && callback(extractFiles(fileList, fileFilter))
-            })
+            }).always(function(res) {debugger})
         }
     }
 
@@ -356,7 +349,7 @@ jQuery(function() {
             // 模块id
             module_id: moduleId,
             // 添加上一步处理人
-            lastoperator: id('ds1_lastuser').innerText,
+            lastoperator: $id('ds1_lastuser').innerText,
             codeOrigin: codeOrigin,
             requestType: requestType,
             // 部署类型 3-免测，自动化流程只能在免测情况可用
@@ -406,7 +399,7 @@ jQuery(function() {
             // 单号
             orderid: orderId,
             rollbacktype: 1,
-            versionType: id("ds2_versionType").innerText,      // 免测、文件
+            versionType: $id("ds2_versionType").innerText,      // 免测、文件
             contentType: '',
             currentPerson: operator,
             fileslist: fileList,
@@ -440,7 +433,7 @@ jQuery(function() {
             product_id: productId,
             module_id: moduleId,
             // 添加上一步处理人
-            lastoperator: id('ds1_lastuser').innerText,
+            lastoperator: $id('ds1_lastuser').innerText,
             builder: operator,
             // 部署原因
             reason: '',
@@ -449,7 +442,7 @@ jQuery(function() {
             // 是否灰度发布（选择部分ip）
             istestrelease: 0,
 
-            isdeletefiles: id("isdeletefiles").checked ? 'yes' : 'no',
+            isdeletefiles: $id("isdeletefiles").checked ? 'yes' : 'no',
             // 是否定时发布
             // isschedule: 'no',
             // 定时
@@ -597,9 +590,7 @@ jQuery(function() {
 
         // autoArs 测试环境
         if (isAutoArsTest) {
-            if (window.confirm('是否开始ars自动发布？')) {
-                doAutoArsTest()
-            }
+            doAutoArsTest()
         }
 
         // 预发布环境部署
