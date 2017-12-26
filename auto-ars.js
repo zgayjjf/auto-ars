@@ -1,14 +1,21 @@
 // ==UserScript==
 // @name         AutoArs
 // @namespace    http://tampermonkey.net/
-// @version      0.2
+// @version      0.3
 // @description  try to take over the world!
-// @author       You
+// @author       jeff
 // @match        http://ars.sng.local/arsphp/*
+// @match        http://jb.oa.com/dist/test
 // @grant        none
 // ==/UserScript==
 
+/**
+ * ars自动发布脚本
+ * 帮助自动化从测试环境=>预发布环境=>正式环境，不需要人工参与
+ */
 jQuery(function() {
+    // 只在ars下面生效
+    if (window.location.href.indexOf('ars.sng.local') === -1) return
     jQuery.noConflict()
 
     const ARS_PUBLISH_PATH = 'http://ars.sng.local/arsphp/index.php/release'
@@ -292,11 +299,11 @@ jQuery(function() {
                 extracted.push(file.id)
             }
 
-            if (fileFilter === 'html' && file.path.match(/\.html$/)) {
+            if (fileFilter === 'html' && file.name.match(/\.html$/)) {
                 extracted.push(file.id)
             }
 
-            if (fileFilter === '!html' && !file.path.match(/\.html$/)) {
+            if (fileFilter === '!html' && !file.name.match(/\.html$/)) {
                 extracted.push(file.id)
             }
         })
@@ -556,7 +563,7 @@ jQuery(function() {
         // 先加载要发布的文件
         getFileListRemote(fileFilter, function (files) {
             if (!files) {
-                if (window.confirm('当前发布列表没有' + fileFilter + '文件，是否发布')) {
+                if (window.confirm('当前发布列表没有' + fileFilter + '文件，是否继续发布')) {
                     callback && callback()
                 }
             } else {
@@ -622,4 +629,72 @@ jQuery(function() {
     }
 
     init()
+})
+
+/**
+ * jb2ars自动发布脚本
+ * 帮助自动从jb发布到ars，不需要人工参与。
+ * 需要先选中要发布的单号，再点自动发布
+ */
+jQuery(function () {
+    // 只在jb.oa.com下生效
+    if (window.location.href.indexOf('jb.oa.com') === -1) return
+
+    var $autoPublishArs = $('<button id="autoPublishArs" style="position:absolute; top: 2px; left: 60%;font-size: 20px;z-index: 100000;border-radius: 10px;border: 1px solid white;color: #fff;background: lightgreen;cursor:pointer;"">publishJb2Ars</button>')
+    $autoPublishArs.appendTo(document.body)
+
+    $autoPublishArs.on('click', function() {
+        $('#btnPro')[0].click()
+        setTimeout(function(){
+            $('.x-btn-default-small-noicon:contains("预编译")').click()
+
+            var $compilingTip = $('.x-window-blue-window-closable.x-window-active')
+
+            // 持续检查是否编译完成
+            var compilationDetectionKey = setInterval(function() {
+                if (!$compilingTip.hasClass('x-window-active')) {
+                    clearInterval(compilationDetectionKey)
+
+                    var jbId = $('#textfield-1047-inputEl').val()
+                    var svn = $('#textfield-1048-inputEl').val()
+
+                    $.ajax('//jb.oa.com/dist/test/ars', {
+                        type: 'post',
+                        data: {
+                            id: jbId,
+                            svn: svn
+                        },
+                        dataType: 'json'
+                    }).done(function(res) {
+                        if (res.code) {
+                            alert(JSON.stringify(res.msg))
+                        }
+                        var msgs = res.msg
+
+                        msgs.forEach(function(innerRes) {
+                            var innerResMsg = JSON.parse(innerRes.msg)
+                            if (innerRes.code !== 0) {
+                                alert(JSON.stringify(innerResMsg))
+                            }
+                        })
+
+                        var releaseTags = msgs.filter(function (item) {
+                            return item.code === 0
+                        }).map(function (item) {
+                            var msg = JSON.parse(item.msg)
+                            return msg.releasetag
+                        })
+                        if (releaseTags.length === 1) {
+                            window.open('http://ars.sng.local/arsphp/index.php/release?tag=' + releaseTags[0] + '&autoArs=1&publishStage=test', 'alloy_auto_ars')
+                        } else if (releaseTags.length > 1) {
+                            var msg = releaseTags.reduce(function (preventValue, item) {
+                                return preventValue + '<br><a href="http://ars.sng.local/arsphp/index.php/release?tag=' + item + '" target="_blank">' + item + '</a>'
+                            }, '生成了多个ars单')
+                            alert(msg)
+                        }
+                    })
+                }
+            }, 1000)
+        })
+    })
 })
