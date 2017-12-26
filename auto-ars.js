@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AutoArs
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  try to take over the world!
 // @author       You
 // @match        http://ars.sng.local/arsphp/*
@@ -287,7 +287,7 @@ jQuery(function() {
      */
     function extractFiles(files, fileFilter) {
         var extracted = []
-        files.each(function (index, file) {
+        files.forEach(function (file, index) {
             if (!fileFilter) {
                 extracted.push(file.id)
             }
