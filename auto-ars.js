@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AutoArs
 // @namespace    http://tampermonkey.net/
-// @version      0.4
+// @version      0.5
 // @description  try to take over the world!
 // @author       jeff
 // @match        http://ars.sng.local/arsphp/*
@@ -49,7 +49,9 @@ jQuery(function() {
     // 请求类型 0-文件发布测试请求 1-文件发布请求
     var requestType = window.requestType//|| jQuery('#requestType').val()
     // 关注列表
-    var ccs = $id('ccs_TextBox').value.trim().replace(/\(.*?\)/g, "")
+    // 关注列表有两种不同的id，需要兼容一下................
+    var $ccs = $id('ccs_TextBox') || $id('ccs_TextBoxValue')
+    var ccs = $ccs.value.trim().replace(/\(.*?\)/g, "")
     // 文件列表，后续会异步拉取
     var fileList = []
 
