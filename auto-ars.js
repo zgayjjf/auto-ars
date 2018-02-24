@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         AutoArs
 // @namespace    http://tampermonkey.net/
-// @version      0.5
+// @version      0.6
 // @description  try to take over the world!
 // @author       jeff
 // @match        http://ars.sng.local/arsphp/*
