@@ -657,8 +657,8 @@ jQuery(function () {
                 if (!$compilingTip.hasClass('x-window-active')) {
                     clearInterval(compilationDetectionKey)
 
-                    var jbId = $('#textfield-1047-inputEl').val()
-                    var svn = $('#textfield-1048-inputEl').val()
+                    var jbId = $('#textfield-1048-inputEl').val()
+                    var svn = $('#textfield-1049-inputEl').val()
 
                     $.ajax('//jb.oa.com/dist/test/ars', {
                         type: 'post',
