@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         AutoArs
 // @namespace    http://tampermonkey.net/
-// @version      0.6
+// @version      0.7
 // @description  try to take over the world!
-// @author       jeff
+// @author       jeff polar
 // @match        http://ars.sng.local/arsphp/*
 // @match        http://jb.oa.com/dist/test
 // @grant        none
@@ -81,15 +81,16 @@ jQuery(function() {
         $MessageInfo.addClass('MessageInfoStyle_Doing alert alert-info').text('正在检查是否有其它发布单中包含相同文件...')
 
         jQuery.ajax('arsphp/index.php/release/filecheck',{
-            dataType: 'xml',
+            dataType: 'json',
             type: 'POST',
             data: options
-        }).done(function(resXML) {
-            var ret = jQuery(resXML).find('results>result').eq(0).text()
+        }).done(function(res) {
+            // 0.6版本以后，这个接口改为了返回json数据
+            var ret = res.result
             if ( ret === 'true' ) {
                 callback()
             } else if (ret === 'false') {
-                var url = jQuery(resXML).find('results>url').text()
+                var url = res.url
 
                 $MessageInfo.removeClass('MessageInfoStyle_Doing').text('文件冲突，自动发布终止')
 
